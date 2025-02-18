@@ -43,34 +43,16 @@ const data = {
     hash: '3a6f41b0a70e527b3bd6b79423bf4cd8'
 }
 
-async function diemDanh_cURL(cUrl, callback = () => { }) {
+function diemDanh_cURL(cUrl) {
+    // Kiểm tra nếu cUrl không phải undefined
+    if (!cUrl) {
+        console.error('cUrl is undefined');
+        return '';
+    }
+    
+    // Xóa proxy nếu có
     cUrl = cUrl.replace(/--proxy\s+[^\s]+/, '');
-    let status = false;
-
-    // Chuyển exec thành một Promise để sử dụng await
-    status = await new Promise((resolve) => {
-        exec(cUrl, (error, stdout, stderr) => {
-            if (error) {
-                console.error('Lỗi khi gọi cURL:', error);
-                resolve(false); // Trả về false nếu có lỗi
-                return;
-            }
-
-            try {
-                const jsonResponse = JSON.parse(stdout); // Phân tích cú pháp kết quả trả về
-                console.log('Kết quả từ cURL (dưới dạng JSON):', jsonResponse);
-                callback(jsonResponse);
-                resolve(jsonResponse.success); // Trả về true nếu thành công
-            } catch (parseError) {
-                console.error('Lỗi khi phân tích cú pháp JSON:', parseError);
-                console.log('Kết quả trả về:', stdout); // In ra kết quả nếu không phải JSON
-                callback('ERROR');
-                resolve(false); // Trả về false nếu có lỗi phân tích cú pháp
-            }
-        });
-    });
-
-    return status; // Trả về status
+    return cUrl;
 }
 
 // Gọi hàm mỗi giờ
@@ -116,7 +98,9 @@ async function checkDiemDanh(chatId, cUrl) {
         
         if (randomTimes.includes('19:00')) {
             delete userCurlMap[chatId]; // Xóa cURL của người dùng
-            bot.telegram.sendMessage(chatId, `Đã xóa cURL của bạn!`); // Gửi tin nhắn đến người dùng
+            // if (!userCurlMap[chatId]) {
+            //     bot.telegram.sendMessage(chatId, `Đã xóa cURL của bạn!`); // Gửi tin nhắn đến người dùng
+            // }
             if (status) {
                 bot.telegram.sendMessage(chatId, `Điểm danh thành công và đã xoá cURL: ${currentTime} \n ${JSON.stringify(randomTimes, null, 2)}`); // Gửi tin nhắn đến người dùng
             } else {
